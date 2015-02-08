@@ -3,6 +3,7 @@
 <head>
 
   <link rel="stylesheet" type="text/css" href="/bower_components/fullpage.js/jquery.fullPage.css" />
+  <link rel="stylesheet" type="text/css" href= "http://developer.spotify.com/web-api/static/css/cached.css"/>
 
   <!-- <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script> -->
     <script src="http://code.jquery.com/jquery-1.9.1.min.js"></script>
@@ -15,19 +16,22 @@
   <script type="text/javascript" src="/bower_components/fullpage.js/vendors/jquery.slimscroll.min.js"></script>
 
   <script type="text/javascript" src="/bower_components/fullpage.js/jquery.fullPage.js"></script>
+  <script type="text/javascript" src="/bower_components/spotify-web-api-js/src/spotify-web-api.js"></script>
 
   <script type="text/javascript">
     $( document ).ready(function() {
-        $('#fullpage').fullpage();
+        $('#fullpage').fullpage({
+          sectionsColor: ['#556270', '#4ECDC4', '#C7F464', '#FF6B6B', '#C44D58'],
+        });
     });
- 
+
   </script>
+
+
   <meta charset="utf-8">
   <title>Socket.io Demo</title>
 
-  <style>
-  .chat-form { display: none; }
-  </style>
+
 </head>
 <body>
 
@@ -42,26 +46,37 @@
   </div>
 
 
-  <div  class="section">
+  <div class="section">
     <form class="chat-form" method="post" action="">
       <div>Hey there, <span id="username">Guest</span></div>
-      <label>To:</label> <input id="recipient" /><br />
-      <label>Message: </label><br />
+      <label>I want to hear a song that is... </label><br />
       <textarea id="message"></textarea>
       <input type="submit" value="Send" />
 
-      <ul id="messages">
-
-      </ul>
     </form>
   </div>
 
 <div  class="section">
-  <h1>HI</h1>
+  <div style="width: 50%; height: 100%;float:left;">
+    <h1>Please recommend a song that is...</h1>
+    <p id="messages">
+    </p>
+  </div>
+  <div style="width: 50%; height: 100%; float:right;">
+    <form class="search-form" method="post" action="">
+      <input type="text" id="query" value="" class="form-control" placeholder="Type an Artist Name"/>
+      <input type="submit" id="search" class="btn btn-primary" value="Feelin' Lucky!" />
+    </form>
+    <ul id = "search_result">
+    </ul>
+
+  </div>
+
 </div>
 
 <div  class="section">
-  <h1>wassup?</h1>
+  <H1 id= "section4">Waiting...</H1>
+  <iframe width="300" height="380" frameborder="0" allowtransparency="true" id = "playbutton"></iframe>
 </div>
 
 
@@ -77,29 +92,69 @@
     var username = $(this).children("input").val();
     socket.emit("add-user", {"username": username});
     // Remove this form and show the chat form
-    $(this).remove();
+    //$(this).remove();
     $("#username").text(username);
-    chat_form.show();
+    $.fn.fullpage.moveSectionDown();
+    //chat_form.show();
     return false;
   });
   // Chat form
   var chat_form = $(".chat-form");
   chat_form.on("submit", function(){
     // Send the message to the server
-    socket.emit("private-message", {
-      "username": $(this).find("input:first").val(),
+    socket.emit("song-request", {
+      //''"username": $(this).find("input:first").val(),
       "content": $(this).find("textarea").val()
     });
     // Empty the form
     $(this).find("input:first, textarea").val('');
+    $.fn.fullpage.moveSectionDown();
     return false;
   });
-  // Whenever we receieve a message, append it to the <ul>
-  socket.on("add-message", function(data){
-    $("#messages").append($("<li>", {
-      "text": data.content
-    }));
+
+  $(".search-form").on("submit", function(){
+    // Tell the server about it
+    var trackname = $(this).find("input:first").val();
+
+    var spotifyApi = new SpotifyWebApi();
+
+
+    spotifyApi.searchTracks(trackname,{limit:10})
+    .then(function(data) {
+      console.log('Search by ' + trackname, data);
+
+      var items = data['tracks'].items;
+      /*
+      for(var i = 0;i< items.length; i++)
+        $('#search_result').append($('<li>').text(items[i].name));
+        */
+      var uri = items[0].uri;
+
+      socket.emit("song-recommend", {
+        "spotify-uri": uri,
+      });
+
+
+    }, function(err) {
+      console.error(err);
+    });
+
+    $.fn.fullpage.moveSectionDown();
+    return false;
+
   });
+  // Whenever we receieve a message, append it to the <ul>
+  socket.on("song-request-post", function(data){
+    $("#messages").text(data.content);
+
+  });
+
+  socket.on("song-post", function(data){
+    $("#section4").remove();
+    var uri = data['spotify-uri']
+    document.getElementById('playbutton').src = "https://embed.spotify.com/?uri=" + uri;
+  });
+
 </script>
 </body>
 </html>

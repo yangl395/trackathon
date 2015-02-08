@@ -64,13 +64,13 @@ io.sockets.on('connection', function (socket) {
     console.log(tempUserB);
   });
 
-  socket.on('private-message', function(data){
+  socket.on('song-request', function(data){
     console.log("Sending: " + data.content + " to " + data.username);
     console.log(socket.id);
     var targetUser = getTargetUser(socket.id);
     console.log(targetUser);
     console.log(data.content);
-    io.sockets.connected[targetUser.uSocket].emit("add-message", data);
+    io.sockets.connected[targetUser.uSocket].emit("song-request-post", data);
 
     /*
     if (clients[data.username]){
@@ -81,7 +81,11 @@ io.sockets.on('connection', function (socket) {
     */
 
   });
+  socket.on('song-recommend',function(data){
+    var targetUser = getTargetUser(socket.id);
+    io.sockets.connected[targetUser.uSocket].emit("song-post", data);
 
+  });
   //Removing the socket on disconnect
   socket.on('disconnect', function() {
     for(var name in clients) {
