@@ -17,14 +17,14 @@
 
   <form class="chat-form" method="post" action="">
     <div>Hey there, <span id="username">Guest</span></div>
-    <label>To:</label> <input id="recipient" /><br />
-    <label>Message: </label><br />
-    <textarea id="message"></textarea>
+
+    <label>I want to hear a song that's ...: </label><br />
+    <textarea placeholder = "great for hackathon" id="message"></textarea>
     <input type="submit" value="Send" />
 
-    <ul id="messages">
+    <p id="messages">
 
-    </ul>
+    </p>
   </form>
 
   <script src="http://code.jquery.com/jquery-1.9.1.min.js"></script>
@@ -56,9 +56,7 @@
   });
   // Whenever we receieve a message, append it to the <ul>
   socket.on("add-message", function(data){
-    $("#messages").append($("<li>", {
-      "text": data.content
-    }));
+    $("#messages").text(data.content);
   });
 </script>
 </body>

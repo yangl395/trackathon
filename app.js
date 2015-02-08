@@ -8,31 +8,81 @@ app.get('/', function(req, res){
 
 var clients = {};
 
-var users = [];
+var availableQueue = [];
+
+
+function pairUsers(userA, userB){
+  userA.targetSocket = userB.uSocket;
+  userB.targetSocket = userA.uSocket;
+  return true;
+}
+
+function getTargetUser(usocket){
+  for (var user in clients){
+    console.log(clients[user]);
+    if(clients[user].targetSocket == usocket){
+      return clients[user];
+      break;
+    }
+  }
+  console.log('cant find target user');
+  return null;
+}
+
+function getThisUser(usocket){
+  for (var user in clients){
+    console.log(clients.user);
+    if(clients.user.uSocket == usocket){
+      console.log(123);
+    }
+  }
+  console.log('cant find this user');
+  return null;
+}
+
 
 io.sockets.on('connection', function (socket) {
 
-  socket.on('add-user', function(data){
-    clients[data.username] = {
-      "socket": socket.id
 
+  socket.on('add-user', function(data){
+    var tempUser = {
+    uSocket: socket.id,
+    isAvail: true
     };
-    console.log(data);
+    clients[data.username] = tempUser;
+    if(availableQueue.length == 0){
+      availableQueue.push(tempUser);
+    }else{
+      var tempUserB = availableQueue.shift();
+      pairUsers(clients[data.username], tempUserB);
+    }
+
+    console.log(tempUser);
+    console.log(tempUserB);
   });
 
   socket.on('private-message', function(data){
     console.log("Sending: " + data.content + " to " + data.username);
+    console.log(socket.id);
+    var targetUser = getTargetUser(socket.id);
+    console.log(targetUser);
+    console.log(data.content);
+    io.sockets.connected[targetUser.uSocket].emit("add-message", data);
+
+    /*
     if (clients[data.username]){
       io.sockets.connected[clients[data.username].socket].emit("add-message", data);
     } else {
       console.log("User does not exist: " + data.username);
     }
+    */
+
   });
 
   //Removing the socket on disconnect
   socket.on('disconnect', function() {
     for(var name in clients) {
-      if(clients[name].socket === socket.id) {
+      if(clients[name].uSocket === socket.id) {
         delete clients[name];
         break;
       }
