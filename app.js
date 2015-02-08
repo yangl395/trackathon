@@ -66,10 +66,10 @@ io.sockets.on('connection', function (socket) {
 
   socket.on('song-request', function(data){
     //console.log("Sending: " + data.content + " to " + data.username);
-    console.log(socket.id);
+    //console.log(socket.id);
     var targetSocket = clients[socket.id].targetSocket;
     //console.log(targetUser);
-    console.log(data.content);
+    //console.log(data.content);
     io.sockets.connected[targetSocket].emit("song-request-post", data);
 
     /*
@@ -88,7 +88,7 @@ io.sockets.on('connection', function (socket) {
   });
 
   socket.on('disconnect', function() {
-    
+
     for(var name in clients) {
       if(clients[name].uSocket === socket.id) {
         delete clients[name];
