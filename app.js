@@ -52,12 +52,12 @@ io.sockets.on('connection', function (socket) {
     uSocket: socket.id,
     isAvail: true
     };
-    clients[data.username] = tempUser;
+    clients[socket.id] = tempUser;
     if(availableQueue.length == 0){
       availableQueue.push(tempUser);
     }else{
       var tempUserB = availableQueue.shift();
-      pairUsers(clients[data.username], tempUserB);
+      pairUsers(clients[socket.id], tempUserB);
     }
 
     console.log(tempUser);
@@ -65,12 +65,12 @@ io.sockets.on('connection', function (socket) {
   });
 
   socket.on('song-request', function(data){
-    console.log("Sending: " + data.content + " to " + data.username);
+    //console.log("Sending: " + data.content + " to " + data.username);
     console.log(socket.id);
-    var targetUser = getTargetUser(socket.id);
-    console.log(targetUser);
+    var targetSocket = clients[socket.id].targetSocket;
+    //console.log(targetUser);
     console.log(data.content);
-    io.sockets.connected[targetUser.uSocket].emit("song-request-post", data);
+    io.sockets.connected[targetSocket].emit("song-request-post", data);
 
     /*
     if (clients[data.username]){
@@ -86,15 +86,17 @@ io.sockets.on('connection', function (socket) {
     io.sockets.connected[targetUser.uSocket].emit("song-post", data);
 
   });
-  //Removing the socket on disconnect
+
   socket.on('disconnect', function() {
+    
     for(var name in clients) {
       if(clients[name].uSocket === socket.id) {
         delete clients[name];
         break;
       }
     }
-  })
+
+  });
 
 });
 

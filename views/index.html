@@ -22,6 +22,7 @@
     $( document ).ready(function() {
         $('#fullpage').fullpage({
           sectionsColor: ['#556270', '#4ECDC4', '#C7F464', '#FF6B6B', '#C44D58'],
+          keyboardScrolling: false
         });
     });
 
@@ -37,23 +38,25 @@
 
 <div id="fullpage">
   <div class="section">
-
+    <div style="width:50%; margin: 0 auto;">
     <form class="username-form" method="post" action="">
       <input type="text" />
       <input type="submit" value="Join" />
     </form>
-
+  </div>
   </div>
 
 
   <div class="section">
+    <div style="width:50%; margin: 0 auto;">
     <form class="chat-form" method="post" action="">
       <div>Hey there, <span id="username">Guest</span></div>
-      <label>I want to hear a song that is... </label><br />
+      <label>So you want to hear a song that is... </label><br />
       <textarea id="message"></textarea>
       <input type="submit" value="Send" />
 
     </form>
+    </div>
   </div>
 
 <div  class="section">
@@ -74,9 +77,11 @@
 
 </div>
 
-<div  class="section">
+<div class="section">
+  <div style="width:50%; margin: 0 auto;">
   <H1 id= "section4">Waiting...</H1>
   <iframe width="300" height="380" frameborder="0" allowtransparency="true" id = "playbutton"></iframe>
+  </div>
 </div>
 
 
@@ -153,6 +158,7 @@
     $("#section4").remove();
     var uri = data['spotify-uri']
     document.getElementById('playbutton').src = "https://embed.spotify.com/?uri=" + uri;
+    socket.emit("disconnect");
   });
 
 </script>
